@@ -9,6 +9,7 @@ import {
   DonutChart,
   BarChart,
   AreaChart,
+  SparkAreaChart,
   ProgressBar,
   Grid,
   Table,
@@ -23,69 +24,111 @@ import type { Metrics } from "@/lib/types"
 import { MONTHLY_REVENUE_TARGET, MONTHLY_TARGETS } from "@/lib/revenue-bucket"
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/parsers"
 
+// Inline icon paths reused across the KPI cards.
+const ICONS = {
+  users: "M16 11a4 4 0 10-4-4 4 4 0 004 4zm-8 0a4 4 0 10-4-4 4 4 0 004 4zm0 2c-2.7 0-8 1.3-8 4v3h9v-3c0-1 .4-1.9 1-2.7A12 12 0 008 13zm8 0c-.4 0-.9 0-1.4.1A5.3 5.3 0 0117 17v3h7v-3c0-2.7-5.3-4-8-4z",
+  cash: "M3 6h18v12H3V6zm9 3a3 3 0 100 6 3 3 0 000-6zM6 8a2 2 0 01-2 2v4a2 2 0 012 2h12a2 2 0 012-2v-4a2 2 0 01-2-2H6z",
+  ticket: "M20 4H4a2 2 0 00-2 2v3a2 2 0 010 4v3a2 2 0 002 2h16a2 2 0 002-2v-3a2 2 0 010-4V6a2 2 0 00-2-2zm-2 13H6v-2h12v2zm0-4H6v-2h12v2z",
+  trophy: "M19 5h-2V3H7v2H5a2 2 0 00-2 2v2a4 4 0 004 4 5 5 0 004 3v2H8v2h8v-2h-3v-2a5 5 0 004-3 4 4 0 004-4V7a2 2 0 00-2-2zM5 9V7h2v4a2 2 0 01-2-2zm14 0a2 2 0 01-2 2V7h2v2z",
+  target: "M12 2a10 10 0 100 20 10 10 0 000-20zm0 4a6 6 0 110 12 6 6 0 010-12zm0 4a2 2 0 100 4 2 2 0 000-4z",
+  flag: "M5 3v18H3V3h2zm2 0h12l-2.5 4L19 11H7V3z",
+}
+
 export function DashboardView({ metrics: m }: { metrics: Metrics }) {
   const monthProgressPct = Math.min(
     100,
     (m.totalEstimateLow / MONTHLY_REVENUE_TARGET) * 100
   )
 
+  const leadSpark = m.dailyLeads.map((d) => ({ date: d.date, Leads: d.leads }))
+
   return (
-    <main className="mx-auto max-w-7xl space-y-12 p-6 md:p-8">
+    <main className="mx-auto max-w-7xl space-y-12 p-4 md:p-8">
       {/* ====== EXECUTIVE OVERVIEW ====== */}
-      <section id="executive" className="space-y-6 scroll-mt-20">
+      <section id="executive" className="space-y-6 scroll-mt-24">
         <SectionHeader
           title="Executive Overview"
           subtitle="Morning glance — daily KPIs and goal progress"
         />
 
-        <Grid numItemsSm={2} numItemsLg={6} className="gap-4">
-          <KpiCard label="Leads (period)" value={formatNumber(m.totalLeads)} />
-          <KpiCard label="Total est. volume" value={formatCurrency(m.totalEstimateLow)} />
-          <KpiCard label="Average ticket" value={formatCurrency(m.averageTicket)} />
+        <Grid numItemsSm={2} numItemsLg={3} className="gap-4 xl:grid-cols-6">
+          <KpiCard
+            label="Leads (period)"
+            value={formatNumber(m.totalLeads)}
+            icon={ICONS.users}
+            accent="blue"
+            spark={leadSpark}
+          />
+          <KpiCard
+            label="Total est. volume"
+            value={formatCurrency(m.totalEstimateLow)}
+            icon={ICONS.cash}
+            accent="emerald"
+          />
+          <KpiCard
+            label="Average ticket"
+            value={formatCurrency(m.averageTicket)}
+            icon={ICONS.ticket}
+            accent="violet"
+          />
           <KpiCard
             label="Won deals $"
             value={m.wonDealsTotal ? formatCurrency(m.wonDealsTotal) : "No data"}
+            icon={ICONS.trophy}
+            accent="amber"
           />
-          <KpiCard label="Win rate" value={formatPercent(m.winRate)} />
-          <KpiCard label="Review flagged" value={formatPercent(m.reviewFlaggedPct)} />
+          <KpiCard
+            label="Win rate"
+            value={formatPercent(m.winRate)}
+            icon={ICONS.target}
+            accent="cyan"
+          />
+          <KpiCard
+            label="Review flagged"
+            value={formatPercent(m.reviewFlaggedPct)}
+            icon={ICONS.flag}
+            accent="rose"
+          />
         </Grid>
 
-        <Card>
+        <Card className="border-[#2a2e3c]">
           <div className="flex items-end justify-between">
             <div>
               <Text>Monthly revenue progress</Text>
-              <Metric>{formatCurrency(m.totalEstimateLow)}</Metric>
+              <Metric className="mt-1">{formatCurrency(m.totalEstimateLow)}</Metric>
             </div>
             <Text>
               Target {formatCurrency(MONTHLY_REVENUE_TARGET)} ({monthProgressPct.toFixed(1)}%)
             </Text>
           </div>
-          <ProgressBar value={monthProgressPct} className="mt-4" />
+          <ProgressBar value={monthProgressPct} color="blue" className="mt-4" />
         </Card>
 
-        <Card>
+        <Card className="border-[#2a2e3c]">
           <Title>Daily lead volume</Title>
           <AreaChart
             className="mt-4 h-72"
-            data={m.dailyLeads.map((d) => ({ date: d.date, Leads: d.leads }))}
+            data={leadSpark}
             index="date"
             categories={["Leads"]}
             colors={["blue"]}
+            curveType="natural"
             showAnimation={false}
+            showGradient
             valueFormatter={(v) => formatNumber(v)}
           />
         </Card>
       </section>
 
       {/* ====== REVENUE MIX ====== */}
-      <section id="revenue-mix" className="space-y-6 scroll-mt-20">
+      <section id="revenue-mix" className="space-y-6 scroll-mt-24">
         <SectionHeader
           title="Revenue Mix"
           subtitle="Brief §3 buckets vs $2M monthly target mix"
         />
 
         <Grid numItemsLg={2} className="gap-6">
-          <Card>
+          <Card className="border-[#2a2e3c]">
             <Title>Estimated revenue by service type</Title>
             <BarChart
               className="mt-4 h-72"
@@ -95,13 +138,13 @@ export function DashboardView({ metrics: m }: { metrics: Metrics }) {
               }))}
               index="bucket"
               categories={["Estimate Low"]}
-              colors={["amber"]}
+              colors={["pink"]}
               valueFormatter={formatCurrency}
               showAnimation={false}
             />
           </Card>
 
-          <Card>
+          <Card className="border-[#2a2e3c]">
             <Title>Bucket vs monthly target</Title>
             <Table className="mt-4">
               <TableHead>
@@ -137,10 +180,11 @@ export function DashboardView({ metrics: m }: { metrics: Metrics }) {
           </Card>
         </Grid>
 
-        <Card>
+        <Card className="border-[#2a2e3c]">
           <Title>Services per bucket</Title>
           <BarList
             className="mt-4"
+            color="pink"
             data={m.byService.slice(0, 12).map((s) => ({
               name: s.service,
               value: s.estLow,
@@ -151,14 +195,14 @@ export function DashboardView({ metrics: m }: { metrics: Metrics }) {
       </section>
 
       {/* ====== LEAD QUALITY ====== */}
-      <section id="lead-quality" className="space-y-6 scroll-mt-20">
+      <section id="lead-quality" className="space-y-6 scroll-mt-24">
         <SectionHeader
           title="Lead Quality + Source"
           subtitle="Where the best leads are coming from"
         />
 
         <Grid numItemsLg={3} className="gap-6">
-          <Card>
+          <Card className="border-[#2a2e3c]">
             <Title>Lead source mix</Title>
             <DonutChart
               className="mt-4 h-64"
@@ -169,7 +213,7 @@ export function DashboardView({ metrics: m }: { metrics: Metrics }) {
               showAnimation={false}
             />
           </Card>
-          <Card>
+          <Card className="border-[#2a2e3c]">
             <Title>Leads by intake channel</Title>
             <DonutChart
               className="mt-4 h-64"
@@ -180,7 +224,7 @@ export function DashboardView({ metrics: m }: { metrics: Metrics }) {
               showAnimation={false}
             />
           </Card>
-          <Card>
+          <Card className="border-[#2a2e3c]">
             <Title>Leads by property type</Title>
             <DonutChart
               className="mt-4 h-64"
@@ -194,7 +238,7 @@ export function DashboardView({ metrics: m }: { metrics: Metrics }) {
         </Grid>
 
         <Grid numItemsLg={2} className="gap-6">
-          <Card>
+          <Card className="border-[#2a2e3c]">
             <Title>Top requested services</Title>
             <BarList
               className="mt-4"
@@ -205,7 +249,7 @@ export function DashboardView({ metrics: m }: { metrics: Metrics }) {
               valueFormatter={formatNumber}
             />
           </Card>
-          <Card>
+          <Card className="border-[#2a2e3c]">
             <Title>Top ZIP codes by leads</Title>
             <Table className="mt-4">
               <TableHead>
@@ -230,14 +274,14 @@ export function DashboardView({ metrics: m }: { metrics: Metrics }) {
       </section>
 
       {/* ====== STRATEGIC PIPELINE ====== */}
-      <section id="strategic" className="space-y-6 scroll-mt-20">
+      <section id="strategic" className="space-y-6 scroll-mt-24">
         <SectionHeader
           title="Strategic Pipeline"
           subtitle="Brief §13 — leads worth chasing first"
         />
 
         <Grid numItemsLg={2} className="gap-6">
-          <Card>
+          <Card className="border-[#2a2e3c]">
             <Title>Recurring opportunity tiers</Title>
             <BarChart
               className="mt-4 h-72"
@@ -249,7 +293,7 @@ export function DashboardView({ metrics: m }: { metrics: Metrics }) {
               showAnimation={false}
             />
           </Card>
-          <Card>
+          <Card className="border-[#2a2e3c]">
             <Title>Strategic accounts ({m.strategicLeads.length})</Title>
             <Text>YES on Strategic Account flag — chase these first</Text>
             <div className="mt-4 max-h-72 overflow-auto">
@@ -279,14 +323,14 @@ export function DashboardView({ metrics: m }: { metrics: Metrics }) {
       </section>
 
       {/* ====== MARGIN PROTECTION ====== */}
-      <section id="margin" className="space-y-6 scroll-mt-20">
+      <section id="margin" className="space-y-6 scroll-mt-24">
         <SectionHeader
           title="Margin Protection"
           subtitle="Leads that need human review before going to customer"
         />
 
         <Grid numItemsLg={2} className="gap-6">
-          <Card>
+          <Card className="border-[#2a2e3c]">
             <Title>Confidence breakdown</Title>
             <DonutChart
               className="mt-4 h-64"
@@ -298,7 +342,7 @@ export function DashboardView({ metrics: m }: { metrics: Metrics }) {
               showAnimation={false}
             />
           </Card>
-          <Card>
+          <Card className="border-[#2a2e3c]">
             <Title>Review-flagged leads ({m.reviewFlaggedLeads.length})</Title>
             <Text>Confidence Low, margin warning, or hourly-rate flag</Text>
             <div className="mt-4 max-h-64 overflow-auto">
@@ -342,14 +386,14 @@ export function DashboardView({ metrics: m }: { metrics: Metrics }) {
       </section>
 
       {/* ====== OPERATIONS ====== */}
-      <section id="operations" className="space-y-6 scroll-mt-20">
+      <section id="operations" className="space-y-6 scroll-mt-24">
         <SectionHeader
           title="Operations Insights"
           subtitle="Tuning the engine over time"
         />
 
         <Grid numItemsLg={2} className="gap-6">
-          <Card>
+          <Card className="border-[#2a2e3c]">
             <Title>Estimate mode split</Title>
             <DonutChart
               className="mt-4 h-64"
@@ -360,7 +404,7 @@ export function DashboardView({ metrics: m }: { metrics: Metrics }) {
               showAnimation={false}
             />
           </Card>
-          <Card>
+          <Card className="border-[#2a2e3c]">
             <Title>Leads by ZIP</Title>
             <BarList
               className="mt-4"
@@ -370,7 +414,7 @@ export function DashboardView({ metrics: m }: { metrics: Metrics }) {
           </Card>
         </Grid>
 
-        <Card>
+        <Card className="border-[#2a2e3c]">
           <Text className="text-xs text-gray-500">
             Pass-through types, logistics add-ons, and actual job difficulty charts will populate
             once the workflow patches add those columns and the team starts filling them.
@@ -378,7 +422,7 @@ export function DashboardView({ metrics: m }: { metrics: Metrics }) {
         </Card>
       </section>
 
-      <footer className="pt-8 text-center text-xs text-gray-400">
+      <footer className="pt-8 text-center text-xs text-gray-500">
         Data refreshes every 5 minutes from the live Google Sheet. {m.totalLeads} leads loaded.
       </footer>
     </main>
@@ -387,18 +431,59 @@ export function DashboardView({ metrics: m }: { metrics: Metrics }) {
 
 function SectionHeader({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <div className="border-b border-gray-200 pb-2">
-      <h2 className="text-2xl font-semibold tracking-tight text-gray-900">{title}</h2>
+    <div className="border-b border-[#2a2e3c] pb-3">
+      <h2 className="text-2xl font-semibold tracking-tight text-white">{title}</h2>
       <p className="mt-1 text-sm text-gray-500">{subtitle}</p>
     </div>
   )
 }
 
-function KpiCard({ label, value }: { label: string; value: string }) {
+const ACCENTS: Record<string, { chip: string; spark: string }> = {
+  blue: { chip: "bg-blue-500/15 text-blue-400", spark: "blue" },
+  emerald: { chip: "bg-emerald-500/15 text-emerald-400", spark: "emerald" },
+  violet: { chip: "bg-violet-500/15 text-violet-400", spark: "violet" },
+  amber: { chip: "bg-amber-500/15 text-amber-400", spark: "amber" },
+  cyan: { chip: "bg-cyan-500/15 text-cyan-400", spark: "cyan" },
+  rose: { chip: "bg-rose-500/15 text-rose-400", spark: "rose" },
+}
+
+function KpiCard({
+  label,
+  value,
+  icon,
+  accent = "blue",
+  spark,
+}: {
+  label: string
+  value: string
+  icon: string
+  accent?: keyof typeof ACCENTS | string
+  spark?: Array<{ date: string; Leads: number }>
+}) {
+  const a = ACCENTS[accent] ?? ACCENTS.blue
   return (
-    <Card>
-      <Text>{label}</Text>
-      <Metric className="mt-2">{value}</Metric>
+    <Card className="border-[#2a2e3c] !p-4">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <Text className="truncate text-xs">{label}</Text>
+          <Metric className="mt-2 text-xl">{value}</Metric>
+        </div>
+        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${a.chip}`}>
+          <svg viewBox="0 0 24 24" className="h-5 w-5 fill-current">
+            <path d={icon} />
+          </svg>
+        </span>
+      </div>
+      {spark && spark.length > 1 && (
+        <SparkAreaChart
+          data={spark}
+          index="date"
+          categories={["Leads"]}
+          colors={[a.spark]}
+          showGradient
+          className="mt-3 h-10 w-full"
+        />
+      )}
     </Card>
   )
 }

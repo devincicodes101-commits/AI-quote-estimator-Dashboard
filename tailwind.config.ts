@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss"
 
 const config: Config = {
+  darkMode: "class",
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -36,11 +37,40 @@ const config: Config = {
             inverted: "#ffffff",
           },
         },
+        // Dark "Rocker" palette — deep navy surfaces, soft slate borders.
+        "dark-tremor": {
+          brand: {
+            faint: "#0b1120",
+            muted: "#1e293b",
+            subtle: "#1d4ed8",
+            DEFAULT: "#3b82f6",
+            emphasis: "#60a5fa",
+            inverted: "#0b1120",
+          },
+          background: {
+            muted: "#13151d",
+            subtle: "#262a37",
+            DEFAULT: "#1a1d27",
+            emphasis: "#d1d5db",
+          },
+          border: { DEFAULT: "#2a2e3c" },
+          ring: { DEFAULT: "#2a2e3c" },
+          content: {
+            subtle: "#6b7280",
+            DEFAULT: "#9ca3af",
+            emphasis: "#e5e7eb",
+            strong: "#f9fafb",
+            inverted: "#0b1120",
+          },
+        },
       },
       boxShadow: {
         "tremor-input": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
         "tremor-card": "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
         "tremor-dropdown": "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+        "dark-tremor-input": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+        "dark-tremor-card": "0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4)",
+        "dark-tremor-dropdown": "0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4)",
       },
       borderRadius: {
         "tremor-small": "0.375rem",
