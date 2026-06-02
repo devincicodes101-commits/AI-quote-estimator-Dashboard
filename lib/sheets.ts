@@ -7,11 +7,35 @@ const SHEET_ID = process.env.GOOGLE_SHEET_ID || ""
 const SHEET_TAB = process.env.GOOGLE_SHEET_TAB || "Dashboard Template"
 
 function getAuth() {
-  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL
+  // Preferred: a single JSON blob (no paste corruption risk)
+  const credsJson = process.env.GOOGLE_CREDENTIALS_JSON?.trim()
+  if (credsJson) {
+    let creds: { client_email?: string; private_key?: string }
+    try {
+      creds = JSON.parse(credsJson)
+    } catch (err) {
+      throw new Error(
+        `GOOGLE_CREDENTIALS_JSON is set but is not valid JSON: ${err instanceof Error ? err.message : String(err)}`
+      )
+    }
+    const email = creds.client_email?.trim()
+    const key = creds.private_key?.replace(/\\n/g, "\n")
+    if (!email || !key) {
+      throw new Error("GOOGLE_CREDENTIALS_JSON is missing client_email or private_key")
+    }
+    return new google.auth.JWT({
+      email,
+      key,
+      scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
+    })
+  }
+
+  // Fallback: separate env vars (whitespace trimmed to avoid "account not found")
+  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL?.trim()
   const key = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n")
   if (!email || !key) {
     throw new Error(
-      "Missing GOOGLE_SERVICE_ACCOUNT_EMAIL or GOOGLE_PRIVATE_KEY environment variables"
+      "Missing credentials: set either GOOGLE_CREDENTIALS_JSON, or both GOOGLE_SERVICE_ACCOUNT_EMAIL and GOOGLE_PRIVATE_KEY"
     )
   }
   return new google.auth.JWT({
