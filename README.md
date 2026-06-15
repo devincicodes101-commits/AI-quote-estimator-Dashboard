@@ -22,7 +22,7 @@ Next.js single-page dashboard for the Squeegee Squad LA estimating tool. Reads l
 5. Open the JSON file. You'll need 2 values for the env vars:
    - `client_email` → goes into `GOOGLE_SERVICE_ACCOUNT_EMAIL`
    - `private_key` → goes into `GOOGLE_PRIVATE_KEY` (keep the quotes, keep the `\n` characters as-is)
-6. **Share the Google Sheet** (`1vdjvGmvi4gNvs1cx30DQiHzOkfWtn1FfBXXtMRsg8sw`) with the service account's `client_email` as a Viewer
+6. **Share the Google Sheet** (`1DfbkAvbWMvQJFUr4_i5TlGuGZImbamxF4GNSh5VNa-Q`) with the service account's `client_email` as a Viewer
 
 ---
 
