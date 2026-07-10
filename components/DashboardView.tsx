@@ -51,7 +51,7 @@ export function DashboardView({ metrics: m }: { metrics: Metrics }) {
           subtitle="Morning glance — daily KPIs and goal progress"
         />
 
-        <Grid numItemsSm={2} numItemsLg={3} className="gap-4 xl:grid-cols-6">
+        <Grid numItemsSm={2} numItemsLg={4} className="gap-4">
           <KpiCard
             label="Leads (period)"
             value={formatNumber(m.totalLeads)}
@@ -70,18 +70,6 @@ export function DashboardView({ metrics: m }: { metrics: Metrics }) {
             value={formatCurrency(m.averageTicket)}
             icon={ICONS.ticket}
             accent="violet"
-          />
-          <KpiCard
-            label="Won deals $"
-            value={m.wonDealsTotal ? formatCurrency(m.wonDealsTotal) : "No data"}
-            icon={ICONS.trophy}
-            accent="amber"
-          />
-          <KpiCard
-            label="Win rate"
-            value={formatPercent(m.winRate)}
-            icon={ICONS.target}
-            accent="cyan"
           />
           <KpiCard
             label="Review flagged"
@@ -280,46 +268,32 @@ export function DashboardView({ metrics: m }: { metrics: Metrics }) {
           subtitle="Brief §13 — leads worth chasing first"
         />
 
-        <Grid numItemsLg={2} className="gap-6">
-          <Card className="border-[#2a2e3c]">
-            <Title>Recurring opportunity tiers</Title>
-            <BarChart
-              className="mt-4 h-72"
-              data={m.byRecurringOpportunity.map((r) => ({ tier: r.tier, Leads: r.leads }))}
-              index="tier"
-              categories={["Leads"]}
-              colors={["emerald"]}
-              valueFormatter={formatNumber}
-              showAnimation={false}
-            />
-          </Card>
-          <Card className="border-[#2a2e3c]">
-            <Title>Strategic accounts ({m.strategicLeads.length})</Title>
-            <Text>YES on Strategic Account flag — chase these first</Text>
-            <div className="mt-4 max-h-72 overflow-auto">
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableHeaderCell>Date</TableHeaderCell>
-                    <TableHeaderCell>Service</TableHeaderCell>
-                    <TableHeaderCell>Property</TableHeaderCell>
-                    <TableHeaderCell className="text-right">Est Low</TableHeaderCell>
+        <Card className="border-[#2a2e3c]">
+          <Title>Strategic accounts ({m.strategicLeads.length})</Title>
+          <Text>YES on Strategic Account flag — chase these first</Text>
+          <div className="mt-4 max-h-96 overflow-auto">
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableHeaderCell>Date</TableHeaderCell>
+                  <TableHeaderCell>Service</TableHeaderCell>
+                  <TableHeaderCell>Property</TableHeaderCell>
+                  <TableHeaderCell className="text-right">Est Low</TableHeaderCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {m.strategicLeads.slice(0, 25).map((l) => (
+                  <TableRow key={l.leadId}>
+                    <TableCell>{l.date.slice(0, 10)}</TableCell>
+                    <TableCell className="max-w-[200px] truncate">{l.service}</TableCell>
+                    <TableCell>{l.propertyType}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(l.estimateLow)}</TableCell>
                   </TableRow>
-                </TableHead>
-                <TableBody>
-                  {m.strategicLeads.slice(0, 25).map((l) => (
-                    <TableRow key={l.leadId}>
-                      <TableCell>{l.date.slice(0, 10)}</TableCell>
-                      <TableCell className="max-w-[200px] truncate">{l.service}</TableCell>
-                      <TableCell>{l.propertyType}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(l.estimateLow)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </Card>
-        </Grid>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </Card>
       </section>
 
       {/* ====== MARGIN PROTECTION ====== */}
