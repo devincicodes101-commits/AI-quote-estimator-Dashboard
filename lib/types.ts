@@ -1,6 +1,9 @@
 export type Lead = {
   leadId: string
   date: string
+  customerName: string
+  customerEmail: string
+  customerPhone: string
   leadSource: string
   zip: string
   service: string
@@ -53,4 +56,5 @@ export type Metrics = {
   reviewFlaggedLeads: Lead[]
   byRecurringOpportunity: Array<{ tier: string; leads: number }>
   byEstimateMode: Array<{ mode: string; leads: number }>
+  contactableLeads: Lead[]
 }

@@ -67,6 +67,9 @@ export async function fetchLeads(): Promise<Lead[]> {
   const idx = {
     leadId: headerIndex("Lead ID"),
     date: headerIndex("Date"),
+    customerName: headerIndex("Customer Name"),
+    customerEmail: headerIndex("Customer Email"),
+    customerPhone: headerIndex("Customer Phone"),
     leadSource: headerIndex("Lead Source"),
     zip: headerIndex("ZIP"),
     service: headerIndex("Service"),
@@ -107,6 +110,9 @@ export async function fetchLeads(): Promise<Lead[]> {
     leads.push({
       leadId,
       date: toString(row[idx.date]),
+      customerName: toString(row[idx.customerName]),
+      customerEmail: toString(row[idx.customerEmail]),
+      customerPhone: toString(row[idx.customerPhone]),
       leadSource: toString(row[idx.leadSource]),
       zip: toString(row[idx.zip]),
       service: toString(row[idx.service]),
@@ -241,6 +247,12 @@ export function computeMetrics(leads: Lead[]): Metrics {
     .map(({ key, count }) => ({ mode: String(key), leads: count }))
     .sort((a, b) => b.leads - a.leads)
 
+  // Every lead with at least one usable contact channel (name/email/phone),
+  // newest first — powers the Customer Contacts section.
+  const contactableLeads = leads
+    .filter((l) => l.customerName || l.customerEmail || l.customerPhone)
+    .sort((a, b) => (b.date || "").localeCompare(a.date || ""))
+
   return {
     totalLeads,
     totalEstimateLow,
@@ -261,5 +273,6 @@ export function computeMetrics(leads: Lead[]): Metrics {
     reviewFlaggedLeads,
     byRecurringOpportunity,
     byEstimateMode,
+    contactableLeads,
   }
 }

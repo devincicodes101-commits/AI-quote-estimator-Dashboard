@@ -396,6 +396,116 @@ export function DashboardView({ metrics: m }: { metrics: Metrics }) {
         </Card>
       </section>
 
+      {/* ====== CUSTOMER CONTACTS ====== */}
+      <section id="contacts" className="space-y-6 scroll-mt-24">
+        <SectionHeader
+          title="Customer Contacts"
+          subtitle="Every lead with a rep-collected name, email, or phone — newest first. Use this to follow up."
+        />
+
+        <Grid numItems={1} numItemsSm={3} className="gap-4">
+          <Card className="border-[#2a2e3c]">
+            <Text className="text-xs text-gray-500">Contactable leads</Text>
+            <Metric className="text-white">{formatNumber(m.contactableLeads.length)}</Metric>
+          </Card>
+          <Card className="border-[#2a2e3c]">
+            <Text className="text-xs text-gray-500">With email</Text>
+            <Metric className="text-white">
+              {formatNumber(m.contactableLeads.filter((l) => l.customerEmail).length)}
+            </Metric>
+          </Card>
+          <Card className="border-[#2a2e3c]">
+            <Text className="text-xs text-gray-500">With phone</Text>
+            <Metric className="text-white">
+              {formatNumber(m.contactableLeads.filter((l) => l.customerPhone).length)}
+            </Metric>
+          </Card>
+        </Grid>
+
+        <Card className="border-[#2a2e3c]">
+          <Title className="text-white">Follow-up list</Title>
+          <Text className="text-xs text-gray-500">
+            Showing the {Math.min(m.contactableLeads.length, 100)} most recent contactable leads.
+          </Text>
+          {m.contactableLeads.length === 0 ? (
+            <Text className="mt-6 text-sm text-gray-500">
+              No leads with contact info yet. Once reps start filling in the new "Customer contact"
+              section on the internal form, they'll show up here automatically.
+            </Text>
+          ) : (
+            <div className="mt-4 overflow-x-auto">
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableHeaderCell className="text-gray-400">Date</TableHeaderCell>
+                    <TableHeaderCell className="text-gray-400">Name</TableHeaderCell>
+                    <TableHeaderCell className="text-gray-400">Email</TableHeaderCell>
+                    <TableHeaderCell className="text-gray-400">Phone</TableHeaderCell>
+                    <TableHeaderCell className="text-gray-400">Service</TableHeaderCell>
+                    <TableHeaderCell className="text-gray-400">Estimate</TableHeaderCell>
+                    <TableHeaderCell className="text-gray-400">Status</TableHeaderCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {m.contactableLeads.slice(0, 100).map((lead) => (
+                    <TableRow key={lead.leadId} className="border-t border-[#2a2e3c]">
+                      <TableCell className="text-gray-300">
+                        {(lead.date || "").slice(0, 10)}
+                      </TableCell>
+                      <TableCell className="text-white">
+                        {lead.customerName || "—"}
+                      </TableCell>
+                      <TableCell className="text-gray-300">
+                        {lead.customerEmail ? (
+                          <a
+                            href={`mailto:${lead.customerEmail}`}
+                            className="text-blue-400 hover:text-blue-300"
+                          >
+                            {lead.customerEmail}
+                          </a>
+                        ) : (
+                          "—"
+                        )}
+                      </TableCell>
+                      <TableCell className="text-gray-300">
+                        {lead.customerPhone ? (
+                          <a
+                            href={`tel:${lead.customerPhone.replace(/[^\d+]/g, "")}`}
+                            className="text-blue-400 hover:text-blue-300"
+                          >
+                            {lead.customerPhone}
+                          </a>
+                        ) : (
+                          "—"
+                        )}
+                      </TableCell>
+                      <TableCell className="text-gray-300">{lead.service || "—"}</TableCell>
+                      <TableCell className="text-gray-300">
+                        {formatCurrency(lead.estimateLow)}–{formatCurrency(lead.estimateHigh)}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          size="xs"
+                          color={
+                            lead.wonLostPending === "Won"
+                              ? "emerald"
+                              : lead.wonLostPending === "Lost"
+                                ? "rose"
+                                : "amber"
+                          }
+                        >
+                          {lead.wonLostPending || "Pending"}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </Card>
+      </section>
+
       <footer className="pt-8 text-center text-xs text-gray-500">
         Data refreshes every 5 minutes from the live Google Sheet. {m.totalLeads} leads loaded.
       </footer>
