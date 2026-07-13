@@ -55,7 +55,7 @@ export async function fetchLeads(): Promise<Lead[]> {
   const sheets = google.sheets({ version: "v4", auth })
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SHEET_ID,
-    range: `${SHEET_TAB}!A1:AM2000`,
+    range: `${SHEET_TAB}!A1:AZ2000`,
   })
 
   const rows = res.data.values || []
